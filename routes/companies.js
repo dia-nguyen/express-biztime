@@ -92,7 +92,7 @@ router.put("/:code", async function (req, res, next) {
   );
   const company = result.rows[0];
 
-  if (!company) throw new NotFoundError(`${code} not found`);
+  if (!company) throw new NotFoundError(`${req.params.code} not found`);
 
   return res.json({ company });
 });
@@ -114,7 +114,7 @@ router.delete("/:code", async function (req, res, next) {
 
   const company = result.rows[0];
 
-  if (!company) throw new NotFoundError(`${code} not found`);
+  if (!company) throw new NotFoundError(`${req.params.code} not found`);
 
   return res.json({
     status: "deleted"
