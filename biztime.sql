@@ -53,3 +53,4 @@ CREATE TABLE invoices (
   add_date  DATE DEFAULT CURRENT_DATE NOT NULL,
   paid_date DATE
 );
+
