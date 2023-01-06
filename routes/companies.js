@@ -31,16 +31,28 @@ router.get("/", async function (req, res, next) {
 router.get("/:code", async function (req, res, next) {
   const code = req.params.code;
 
-  const results = await db.query(
+  const cResults = await db.query(
     `SELECT code, name, description
       FROM companies
+      JOIN invoices ON (invoices.comp_code = companies.code)
       WHERE code = $1`,
     [code]
   );
 
-  const company = results.rows[0];
+  const company = cResults.rows[0];
 
   if (!company) throw new NotFoundError();
+
+  const iResults = await db.query(
+    `SELECT id, amt, paid, add_date, paid_date
+      FROM invoices
+      WHERE comp_code = $1`,
+      [company.code]
+  );
+
+  const invoices = iResults.rows;
+
+  company.invoices = invoices;
 
   return res.json({ company });
 });
@@ -75,7 +87,6 @@ router.post("/", async function (req, res, next) {
 * Needs to be given JSON like: {name, description}
 * Returns update company object: {company: {code, name, description}}
 */
-
 router.put("/:code", async function (req, res, next) {
   //TODO: req.body is returning {} instead of undefined?
   if (req.body === undefined) throw new BadRequestError();

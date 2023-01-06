@@ -28,10 +28,6 @@ router.get("/", async function (req, res, next) {
  * Returns {invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}
  */
 router.get("/:id", async function (req, res, next) {
-  // `SELECT id, amt, paid, add_date, paid_date, comp_code
-  // FROM invoices
-  // WHERE id = $1`, [id]`
-
   const iResults = await db.query(
     `SELECT id, amt, paid, add_date, paid_date, comp_code
         FROM invoices
@@ -40,7 +36,8 @@ router.get("/:id", async function (req, res, next) {
     [req.params.id]
   );
   const invoice = iResults.rows[0];
-  console.log("Invoice: ", invoice);
+
+  if (!invoice) throw new NotFoundError();
 
   const cResults = await db.query(
     `SELECT code, name, description
@@ -49,7 +46,6 @@ router.get("/:id", async function (req, res, next) {
     [invoice.comp_code]
   );
 
-  console.log("cResults: ", cResults);
   const company = cResults.rows[0];
 
   delete invoice.comp_code;
@@ -98,8 +94,31 @@ router.put("/:id", async function (req, res, next) {
 
   const invoice = result.rows[0];
 
-  if (!invoice) throw new NotFoundError(`${req.params.id} not found`);
-  return res.json({ invoice })
+  if (!invoice) throw new NotFoundError(`Invoice ${req.params.id} not found`);
+  return res.json({ invoice });
+});
+
+/**
+ * DELETE /companies/[code]
+ * Deletes company.
+ * Should return 404 if company cannot be found.
+ * Returns {status: "deleted"}
+ */
+router.delete("/:id", async function (req, res, next) {
+  const result = await db.query(
+    `DELETE FROM invoices
+      WHERE id = $1
+      RETURNING id`,
+    [req.params.id]
+  );
+
+  const invoice = result.rows[0];
+
+  if (!invoice) throw new NotFoundError(`Invoice ${req.params.id} not found`);
+
+  return res.json({
+    status: "deleted",
+  });
 });
 
 module.exports = router;
