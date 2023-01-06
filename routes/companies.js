@@ -34,7 +34,6 @@ router.get("/:code", async function (req, res, next) {
   const cResults = await db.query(
     `SELECT code, name, description
       FROM companies
-      JOIN invoices ON (invoices.comp_code = companies.code)
       WHERE code = $1`,
     [code]
   );
@@ -44,7 +43,7 @@ router.get("/:code", async function (req, res, next) {
   if (!company) throw new NotFoundError();
 
   const iResults = await db.query(
-    `SELECT id, amt, paid, add_date, paid_date
+    `SELECT id
       FROM invoices
       WHERE comp_code = $1`,
       [company.code]
@@ -66,7 +65,6 @@ router.post("/", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
   //test if keys in body = 0
   //write middleware that tests if keys exist then throw error
-
   const { code, name, description } = req.body;
 
   const results = await db.query(
