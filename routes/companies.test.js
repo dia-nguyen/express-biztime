@@ -21,12 +21,11 @@ describe("GET /companies", function() {
   test("Gets a list of 2 companies", async () => {
     const resp = await request(app).get("/companies");
 
+    delete amazonTestCompany.description;
+
     expect(resp.body).toEqual({
       "companies": [
-        {
-          "code": "amazon",
-          "name": "Amazon"
-        }
+          amazonTestCompany
       ]
     })
   })
